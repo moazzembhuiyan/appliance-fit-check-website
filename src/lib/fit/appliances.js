@@ -1,0 +1,116 @@
+/**
+ * Appliance catalogue. The seven types come from the site's FAQ
+ * ("What appliances can I check?"). `webCheck` controls whether the website
+ * calculator runs the check (true) or only points to the app (false).
+ * The extracted content did not say which appliances are free on the web
+ * (only the refrigerator is labelled "Free"), so all are enabled by default —
+ * flip `webCheck` to false for any that should be app-only.
+ */
+export const APPLIANCES = [
+  {
+    id: "refrigerator",
+    name: "Refrigerator",
+    short: "Refrigerator",
+    free: true,
+    webCheck: true,
+    spaceLabel: "Cabinet or installation opening",
+    guide: "refrigerator-fit-guide",
+    hint: "Measure the opening width at top, middle and bottom and use the smallest value.",
+    checklist: [
+      "Door swing and handle clearance",
+      "Side, top and rear clearance required by the manufacturer",
+      "Rear water and electrical connections",
+      "Delivery path and doorway widths",
+    ],
+    example: { product: { height: 69.9, width: 35.75, depth: 34.5 }, space: { height: 70, width: 36, depth: 36 } },
+  },
+  {
+    id: "wall-oven",
+    name: "Wall oven",
+    short: "Wall oven",
+    webCheck: true,
+    spaceLabel: "Cabinet cutout",
+    guide: "what-size-wall-oven-fits-my-existing-cutout",
+    hint: "Measure width and height in several places; the smallest measurement counts.",
+    checklist: [
+      "Electrical junction box and conduit location",
+      "Trim and oven-door clearance",
+      "Cabinet support below the oven",
+    ],
+    example: { product: { height: 28.5, width: 29.5, depth: 23.5 }, space: { height: 28.75, width: 30, depth: 24 } },
+  },
+  {
+    id: "wall-oven-microwave-combo",
+    name: "Microwave & wall oven combo",
+    short: "Oven + microwave combo",
+    webCheck: true,
+    spaceLabel: "Cabinet cutout",
+    guide: "can-i-replace-a-double-wall-oven-with-a-microwave-oven-combo",
+    hint: "Compare the full combination unit, not each appliance separately.",
+    checklist: ["Electrical requirements", "Cabinet support", "Trim and manufacturer clearances"],
+    example: { product: { height: 50.5, width: 29.5, depth: 23.5 }, space: { height: 51, width: 30, depth: 24 } },
+  },
+  {
+    id: "dishwasher",
+    name: "Dishwasher",
+    short: "Dishwasher",
+    webCheck: true,
+    spaceLabel: "Cabinet opening",
+    guide: "dishwasher-opening-size-guide",
+    hint: "New flooring can reduce the opening height. Measure the opening as it is today.",
+    checklist: [
+      "Door opens fully without hitting anything",
+      "Water, drain and electrical connections",
+      "Side clearance and countertop mounting",
+    ],
+    example: { product: { height: 34, width: 23.75, depth: 24 }, space: { height: 34.5, width: 24, depth: 24.5 } },
+  },
+  {
+    id: "cooktop",
+    name: "Cooktop",
+    short: "Cooktop",
+    webCheck: true,
+    spaceLabel: "Countertop cutout",
+    guide: "cooktop-cutout-size-guide",
+    hint: "Enter the cutout size required by the cooktop, not its overall advertised width.",
+    checklist: [
+      "Trim coverage if the new cooktop is smaller",
+      "Space below (downdraft models need more)",
+      "Gas and electrical connection locations",
+    ],
+    example: { product: { height: 4, width: 29.5, depth: 20.5 }, space: { height: 4.5, width: 30, depth: 21 } },
+  },
+  {
+    id: "otr-microwave",
+    name: "Over-the-range microwave",
+    short: "OTR microwave",
+    webCheck: true,
+    spaceLabel: "Space above the range",
+    guide: "over-the-range-microwave-fit-guide",
+    hint: "Fit depends on more than width: mounting height, cabinet depth, venting and outlet.",
+    checklist: [
+      "Clearance above the cooking surface",
+      "Mounting bracket and support",
+      "Venting: upward, through the rear wall or recirculating",
+      "Outlet location",
+    ],
+    example: { product: { height: 16.5, width: 29.9, depth: 15.5 }, space: { height: 17, width: 30, depth: 16 } },
+  },
+  {
+    id: "range-hood",
+    name: "Range hood",
+    short: "Range hood",
+    webCheck: true,
+    spaceLabel: "Wall and cabinet space",
+    guide: "range-hood-fit-guide",
+    hint: "Check hood depth and mounting height against surrounding cabinets.",
+    checklist: [
+      "Duct and vent location",
+      "Electrical connection",
+      "Mounting height and manufacturer clearances",
+    ],
+    example: { product: { height: 18, width: 29.9, depth: 18 }, space: { height: 20, width: 30, depth: 20 } },
+  },
+];
+
+export const getAppliance = (id) => APPLIANCES.find((a) => a.id === id);

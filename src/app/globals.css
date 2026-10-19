@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ink: #251b25;
+  --color-plum: #3a313b;
+  --color-paper: #faf8f6;
+  --color-mist: #f2eef1;
+  --color-line: #e6e0e5;
+  --color-muted: #675c68;
+  --color-brass: #c9a46a;
+  --color-brass-deep: #7d5d27;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Tailwind v3 defaults borders to gray-200; keep v4-style currentColor */
+@layer base {
+  *, ::before, ::after { border-color: currentColor; }
+}
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { background: var(--color-paper); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; text-wrap: balance; }
+p { text-wrap: pretty; }
+::selection { background: var(--color-brass); color: var(--color-ink); }
+
+:focus-visible { outline: 2px solid var(--color-brass-deep); outline-offset: 2px; border-radius: 4px; }
+.on-dark :focus-visible { outline-color: var(--color-brass); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+.skip-link { position: absolute; left: -999px; top: 0; z-index: 100; background: var(--color-ink); color: #fff; padding: .75rem 1rem; border-radius: 0 0 .5rem 0; }
+.skip-link:focus { left: 0; }
+
+/* Print: used by "Export as PDF" */
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: #fff; }
+  .print-card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+}
+
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -48%) scale(.97) } to { opacity: 1; transform: translate(-50%, -50%) scale(1) } }
+
+/* Scroll reveal + route transition (CSS only, visible by default) */
+[data-rv] { transition: opacity .45s ease-out, transform .45s ease-out; }
+[data-rv="hide"] { opacity: 0; transform: translateY(18px); }
+[data-rv="show"] { opacity: 1; transform: none; }
+@keyframes route-in { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.route-in { animation: route-in .25s ease-out both; }
