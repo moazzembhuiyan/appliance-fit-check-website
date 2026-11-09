@@ -8,20 +8,21 @@ import { useAuth } from "@/context/auth-context";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { profileSchema } from "@/lib/validation/schemas";
-import { api } from "@/lib/api";
+import { useUpdateProfileMutation } from "@/store/api";
 import { fmtDate } from "@/lib/utils";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
   const [formError, setFormError] = useState("");
-  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting, isDirty } } = useForm({ resolver: zodResolver(profileSchema), mode: "onTouched" });
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+  const { register, handleSubmit, reset, setError, formState: { errors, isDirty } } = useForm({ resolver: zodResolver(profileSchema), mode: "onTouched" });
 
   useEffect(() => { if (user) reset({ name: user.name, email: user.email, phone: user.phone || "" }); }, [user, reset]);
 
   const onSubmit = async (v) => {
     setFormError("");
     try {
-      const { user: u } = await api.user.updateProfile(v);
+      const { user: u } = await updateProfile(v).unwrap();
       setUser(u);
       toast.success("Profile updated.");
     } catch (e) {
@@ -45,7 +46,7 @@ export default function Profile() {
         <p className="-mt-2 flex gap-2 text-xs text-muted"><Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />Whether changing your email requires re-verification is decided by your backend.</p>
         <Field label="Phone (optional)" type="tel" autoComplete="tel" error={errors.phone?.message} {...register("phone")} />
         <div className="flex gap-3 pt-2">
-          <Button type="submit" loading={isSubmitting} disabled={!isDirty}>Save changes</Button>
+          <Button type="submit" loading={isLoading} disabled={!isDirty}>Save changes</Button>
           <Button type="button" variant="ghost" disabled={!isDirty} onClick={() => reset()}>Discard</Button>
         </div>
       </form>

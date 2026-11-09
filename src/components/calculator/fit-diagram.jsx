@@ -1,6 +1,7 @@
 "use client";
 import { motion, useReducedMotion } from "motion/react";
 import { STATUS_STYLE } from "@/components/ui/status-badge";
+import { formatFraction } from "@/lib/measurements";
 
 const COLORS = { fits: "#2b7a57", tight: "#946100", modify: "#ac4a1c", no: "#ae2a22" };
 
@@ -23,7 +24,7 @@ export function FitDiagram({ product, space, status = "fits", className }) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img"
-      aria-label={`Diagram comparing a ${product.width} by ${product.height} inch product with a ${space.width} by ${space.height} inch opening`}>
+      aria-label={`Diagram comparing a ${formatFraction(product.width)} by ${formatFraction(product.height)} inch product with a ${formatFraction(space.width)} by ${formatFraction(space.height)} inch opening`}>
       <defs>
         <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="7" stroke="#251b25" strokeOpacity=".14" strokeWidth="1.2" />
@@ -33,7 +34,7 @@ export function FitDiagram({ product, space, status = "fits", className }) {
       <motion.rect initial={false} animate={{ x: sx, y: sy, width: sw, height: sh }} transition={t} fill="#fff" stroke="#251b25" strokeWidth="1.5" strokeDasharray="5 4" />
       <motion.rect initial={false} animate={{ x: px, y: py, width: pw, height: ph, fill: color + "22", stroke: color }} transition={t} strokeWidth="2.5" rx="3" />
       <motion.text initial={false} animate={{ x: W / 2, y: sy - 8 }} textAnchor="middle" fontSize="11" fill="#675c68">
-        {space.width} in
+        {formatFraction(space.width)} in
       </motion.text>
     </svg>
   );

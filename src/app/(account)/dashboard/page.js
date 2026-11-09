@@ -26,7 +26,7 @@ export default function Dashboard() {
       <section aria-labelledby="quick">
         <h2 id="quick" className="text-2xl">Start a check</h2>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-          {APPLIANCES.map((a) => (
+          {APPLIANCES?.map((a) => (
             <li key={a.id}>
               <Link href={`/check?appliance=${a.id}`} className="group flex min-h-14 items-center justify-between rounded-xl border border-line bg-white px-4 transition-colors hover:border-ink/40">
                 <span className="font-medium">{a.name}</span>
@@ -48,7 +48,7 @@ export default function Dashboard() {
               <p className="font-medium">{error}</p>
               <Button variant="outline" size="sm" className="mt-3" onClick={reload}>Try again</Button>
             </div>
-          ) : items === null ? <ChecksSkeleton /> : items.length === 0 ? <EmptyChecks /> : <ChecksList items={items.slice(0, 5)} onRemove={remove} />}
+          ) : items === null ? <ChecksSkeleton /> : items?.length === 0 ? <EmptyChecks /> : <ChecksList items={items?.slice(0, 5)} onRemove={remove} />}
         </div>
       </section>
 

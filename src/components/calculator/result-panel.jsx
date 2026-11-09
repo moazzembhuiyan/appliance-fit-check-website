@@ -1,12 +1,11 @@
 "use client";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { BookOpen, Printer, Save, Smartphone, Info } from "lucide-react";
+import { BookOpen, CreditCard, Printer, Save, Smartphone, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, STATUS_STYLE } from "@/components/ui/status-badge";
 import { FitDiagram } from "./fit-diagram";
 import { fmtIn, cn } from "@/lib/utils";
-import { RULES_ARE_PLACEHOLDERS } from "@/lib/fit/rules.config";
 import { site } from "@/lib/config";
 
 function ClearanceRow({ d }) {
@@ -30,9 +29,29 @@ function ClearanceRow({ d }) {
   );
 }
 
-export function ResultPanel({ appliance, result, product, space, canSave, saved, saving, onSave, loggedIn }) {
+export function ResultPanel({
+  appliance,
+  result,
+  product,
+  space,
+  canSave,
+  saved,
+  saving,
+  onSave,
+  loggedIn,
+  locked = false,
+  onCheckout,
+  checkoutLoading = false,
+  paymentChecking = false,
+  paymentNotice = "",
+  onCheckPayment,
+  userIdAvailable = true,
+}) {
   const reduce = useReducedMotion();
   const s = STATUS_STYLE[result.status];
+  const hasCompleteMeasurements = result.hasCompleteMeasurements ?? ["height", "width", "depth"].every(
+    (dimension) => Number.isFinite(product[dimension]) && Number.isFinite(space[dimension])
+  );
 
   return (
     <motion.div
@@ -40,8 +59,23 @@ export function ResultPanel({ appliance, result, product, space, canSave, saved,
       initial={reduce ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="print-card overflow-hidden rounded-2xl border border-line bg-white shadow-soft"
+      className="print-card relative overflow-hidden rounded-2xl border border-line bg-white shadow-soft"
     >
+      {locked ? (
+        <div aria-hidden className="flex min-h-[28rem] flex-col justify-center space-y-6 p-8 blur-md sm:min-h-[32rem] sm:p-10">
+          <div className="h-8 w-40 rounded-full bg-mist" />
+          <div className="h-8 w-3/4 rounded-lg bg-mist" />
+          <div className="h-4 w-full rounded bg-mist" />
+          <div className="h-px bg-line" />
+          {[0, 1, 2].map((row) => (
+            <div key={row} className="flex items-center gap-3">
+              <div className="size-8 rounded-full bg-mist" />
+              <div className="h-4 flex-1 rounded bg-mist" />
+            </div>
+          ))}
+        </div>
+      ) : (
+      <div>
       <div className={cn("flex flex-col gap-3 p-6 sm:p-7", s.bg)}>
         <StatusBadge status={result.status} label={result.label} className="self-start bg-white/70" />
         <h2 className="text-2xl sm:text-3xl">
@@ -53,16 +87,22 @@ export function ResultPanel({ appliance, result, product, space, canSave, saved,
       <div className="grid gap-6 p-6 sm:p-7 lg:grid-cols-[1fr_minmax(0,16rem)]">
         <div>
           <h3 className="font-sans text-sm font-semibold uppercase tracking-wider text-muted">Dimensions comparison</h3>
-          <ul className="mt-2 divide-y divide-line" aria-label="Per-dimension results">
-            {result.dimensions.map((d) => (
-              <ClearanceRow key={d.key} d={d} />
-            ))}
-          </ul>
+          {result.dimensions.length > 0 ? (
+            <ul className="mt-2 divide-y divide-line" aria-label="Per-dimension results">
+              {result.dimensions.map((d) => (
+                <ClearanceRow key={d.key} d={d} />
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted">Dimension details are unavailable for this saved fit check.</p>
+          )}
         </div>
-        <FitDiagram product={product} space={space} status={result.status} className="mx-auto w-full max-w-xs self-start" />
+        {hasCompleteMeasurements && (
+          <FitDiagram product={product} space={space} status={result.status} className="mx-auto w-full max-w-xs self-start" />
+        )}
       </div>
 
-      <div className="border-t border-line bg-paper p-6 sm:p-7">
+      {appliance.checklist?.length > 0 && <div className="border-t border-line bg-paper p-6 sm:p-7">
         <h3 className="font-sans text-sm font-semibold uppercase tracking-wider text-muted">Dimensions can’t tell you everything — also check</h3>
         <ul className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
           {appliance.checklist.map((c) => (
@@ -72,7 +112,7 @@ export function ResultPanel({ appliance, result, product, space, canSave, saved,
             </li>
           ))}
         </ul>
-      </div>
+      </div>}
 
       <div className="no-print flex flex-wrap items-center gap-3 border-t border-line p-6 sm:px-7">
         {canSave &&
@@ -90,11 +130,11 @@ export function ResultPanel({ appliance, result, product, space, canSave, saved,
         <Button variant="outline" size="sm" onClick={() => window.print()}>
           <Printer className="size-4" /> Export as PDF
         </Button>
-        <Button asChild variant="ghost" size="sm">
+        {appliance.guide && <Button asChild variant="ghost" size="sm">
           <Link href={`/guides/${appliance.guide}`}>
             <BookOpen className="size-4" /> {appliance.name} guide
           </Link>
-        </Button>
+        </Button>}
         <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
           <a href={site.appStoreUrl}>
             <Smartphone className="size-4" /> Full app
@@ -102,11 +142,35 @@ export function ResultPanel({ appliance, result, product, space, canSave, saved,
         </Button>
       </div>
 
-      {RULES_ARE_PLACEHOLDERS && (
-        <p className="no-print flex gap-2 border-t border-line bg-tight-soft px-6 py-3 text-xs text-tight sm:px-7">
-          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          Preview build: the tolerances behind these results are placeholders until the production fit rules are connected.
-        </p>
+      </div>
+      )}
+      {locked && (
+        <div className="no-print absolute inset-0 z-10 flex items-center justify-center bg-white/35 p-6 backdrop-blur-[1px] sm:p-10">
+          <div className="w-full max-w-sm rounded-2xl border border-line bg-white/95 px-6 py-9 text-center shadow-lift sm:px-8 sm:py-11">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-mist text-ink">
+              <LockKeyhole className="size-6" aria-hidden />
+            </div>
+            <h2 className="mt-4 font-display text-2xl">Your result is ready</h2>
+            <p className="mt-2 text-sm text-muted">Complete payment to reveal the fit result and dimension-by-dimension details.</p>
+            {!loggedIn ? (
+              <Button asChild className="mt-5 w-full" size="lg">
+                <Link href="/login?next=/check">Sign in to unlock your result</Link>
+              </Button>
+            ) : userIdAvailable ? (
+              <Button className="mt-5 w-full" size="lg" onClick={onCheckout} loading={checkoutLoading}>
+                <CreditCard className="size-4" /> Pay and view result
+              </Button>
+            ) : (
+              <p role="alert" className="mt-4 text-sm text-no">Your account ID is missing. Refresh your profile and try again.</p>
+            )}
+            {paymentNotice && <p role="status" className="mt-4 text-sm text-muted">{paymentNotice}</p>}
+            {loggedIn && userIdAvailable && (
+              <Button type="button" variant="ghost" size="sm" className="mt-2" onClick={onCheckPayment} loading={paymentChecking}>
+                I’ve paid — check status
+              </Button>
+            )}
+          </div>
+        </div>
       )}
     </motion.div>
   );

@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { APPLIANCES } from "@/lib/fit/appliances";
+import { parseInches } from "@/lib/measurements";
 
 /* ---------- Calculator ---------- */
 export const MAX_DIMENSION_IN = 200;
 
 const dimension = z.preprocess(
-  (v) => (typeof v === "string" ? (v.trim() === "" ? undefined : Number(v.trim().replace(",", "."))) : v),
+  (value) => (typeof value === "string" && !value.trim() ? undefined : parseInches(value)),
   z
-    .number({ error: "Enter a number, e.g. 30.5" })
+    .number({ error: "Enter a measurement, e.g. 29 7/8 or 29.875" })
     .positive("Must be greater than 0")
     .max(MAX_DIMENSION_IN, `Must be ${MAX_DIMENSION_IN} in or less`)
 );
@@ -40,6 +41,7 @@ export const registerSchema = z
   .object({
     name: z.string().trim().min(2, "Enter your name"),
     email,
+    contactNumber: z.string().trim().max(30).optional().or(z.literal("")),
     password: passwordRule,
     confirmPassword: z.string().min(1, "Confirm your password"),
     terms: z.boolean().refine((v) => v === true, "Please accept the Terms and Privacy Policy"),

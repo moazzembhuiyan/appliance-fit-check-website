@@ -1,149 +1,337 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { AnimatePresence, motion } from "motion/react";
-import { RotateCcw, Wand2, Ruler, ArrowDown, Smartphone } from "lucide-react";
+import { ArrowDown, CreditCard, RotateCcw, Ruler, Search, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { ResultPanel } from "./result-panel";
-import { APPLIANCES, getAppliance } from "@/lib/fit/appliances";
-import { evaluateFit } from "@/lib/fit/evaluate";
+import { APPLIANCES } from "@/lib/fit/appliances";
 import { fitInputSchema } from "@/lib/validation/schemas";
 import { useAuth } from "@/context/auth-context";
 import { api } from "@/lib/api";
+import { formatFraction } from "@/lib/measurements";
 import { cn } from "@/lib/utils";
-import { site } from "@/lib/config";
+import {
+  clearPendingFit,
+  PENDING_FIT_KEY,
+  persistPendingFit as savePendingFit,
+} from "@/lib/fit/pending-payment";
 
 const blank = { height: "", width: "", depth: "" };
 const DIMS = [
-  { key: "height", label: "Height", example: "" },
-  { key: "width", label: "Width", example: "" },
-  { key: "depth", label: "Depth", example: "" },
+  { key: "height", label: "Height" },
+  { key: "width", label: "Width" },
+  { key: "depth", label: "Depth" },
 ];
+const calculatorSchema = fitInputSchema.extend({
+  appliance: z.string().trim().min(1, "Choose an appliance type"),
+});
+
+function getLegacyAppliance(type) {
+  const normalizedType = type.toLowerCase();
+  return APPLIANCES.find((item) =>
+    [item.id, item.name, item.short].some((value) => value.toLowerCase() === normalizedType)
+  );
+}
+
+function persistPendingFit(record) {
+  try {
+    savePendingFit(record);
+    return true;
+  } catch {
+    toast.error("This browser could not preserve the fit check for the payment return.");
+    return false;
+  }
+}
+
+function restorePendingFit() {
+  try {
+    const saved = sessionStorage.getItem(PENDING_FIT_KEY);
+    if (!saved) return null;
+    const record = JSON.parse(saved);
+    if (!record?.id) throw new Error("Missing fit check reference.");
+    return api.fitChecks.normalizeRecord({ ...record, isPaid: false });
+  } catch {
+    try {
+      sessionStorage.removeItem(PENDING_FIT_KEY);
+    } catch {
+      toast.error("Browser storage is unavailable; the previous fit check could not be cleared.");
+    }
+    toast.error("The saved fit check could not be restored. Please run the check again.");
+    return null;
+  }
+}
 
 export function FitChecker({ initialAppliance = "refrigerator", compact = false }) {
-  const start = getAppliance(initialAppliance) ? initialAppliance : "refrigerator";
   const { user, status: authStatus } = useAuth();
   const resultRef = useRef(null);
-  const [savedSig, setSavedSig] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [types, setTypes] = useState([]);
+  const [typesLoading, setTypesLoading] = useState(true);
+  const [typesError, setTypesError] = useState("");
+  const [modelQuery, setModelQuery] = useState("");
+  const [modelLoading, setModelLoading] = useState(false);
+  const [modelNotice, setModelNotice] = useState("");
+  const [fitRecord, setFitRecord] = useState(null);
+  const [checkingFit, setCheckingFit] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [paymentChecking, setPaymentChecking] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState("");
 
   const {
     register,
     control,
     reset,
+    resetField,
+    setValue,
     handleSubmit,
     formState: { errors, touchedFields },
   } = useForm({
-    resolver: zodResolver(fitInputSchema),
+    resolver: zodResolver(calculatorSchema),
     mode: "onChange",
-    defaultValues: { appliance: start, product: blank, space: blank },
+    defaultValues: { appliance: "", product: blank, space: blank },
   });
 
   const values = useWatch({ control });
-  const appliance = getAppliance(values.appliance);
-
-  // Live evaluation: runs as soon as all six values are valid.
-  const parsed = useMemo(() => fitInputSchema.safeParse(values), [values]);
-  const result = useMemo(
-    () => (parsed.success ? evaluateFit(parsed.data.appliance, parsed.data.product, parsed.data.space) : null),
-    [parsed]
-  );
-
-  const signature = parsed.success ? JSON.stringify(parsed.data) : "";
-  const saved = !!signature && savedSig === signature;
-
-  const err = (group, key) => (touchedFields?.[group]?.[key] ? errors?.[group]?.[key]?.message : undefined);
-
-  const onSubmit = () => {
-    resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    resultRef.current?.focus({ preventScroll: true });
+  const applianceField = register("appliance");
+  const selectedType = values.appliance || "";
+  const legacyAppliance = getLegacyAppliance(selectedType);
+  const appliance = legacyAppliance || {
+    name: selectedType || "Appliance",
+    spaceLabel: "countertop cutout",
+    hint: "Measure the installation space carefully and enter its height, width, and depth.",
+    guide: "faq",
+    checklist: [],
   };
-  const onInvalid = () => toast.error("Please complete all six measurements to check the fit.");
+  const err = (group, key) =>
+    touchedFields?.[group]?.[key] ? errors?.[group]?.[key]?.message : undefined;
 
-  const useExample = () => {
-    reset({ appliance: values.appliance, ...appliance.example });
-    toast.message("Example measurements loaded — replace them with your own.");
-  };
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      await api.fitChecks.save({
-        appliance: parsed.data.appliance,
-        product: parsed.data.product,
-        space: parsed.data.space,
-        result: { status: result.status, label: result.label, summary: result.summary, dimensions: result.dimensions },
+  useEffect(() => {
+    let active = true;
+    api.applianceModels.listTypes()
+      .then((response) => {
+        if (!active) return;
+        setTypes(response);
+        const legacyInitial = getLegacyAppliance(initialAppliance);
+        const preferred = response.find((item) =>
+          item.type.toLowerCase() === (legacyInitial?.name || initialAppliance).toLowerCase()
+        );
+        setValue("appliance", preferred?.type || response[0]?.type || "");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setTypesError(error.message || "Could not load appliance types.");
+      })
+      .finally(() => {
+        if (active) setTypesLoading(false);
       });
-      setSavedSig(signature);
-      toast.success("Fit check saved to your dashboard.");
-    } catch (e) {
-      toast.error(e.message || "Could not save. Please try again.");
+    return () => {
+      active = false;
+    };
+  }, [initialAppliance, setValue]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const restored = restorePendingFit();
+      if (restored) setFitRecord(restored);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!fitRecord) return undefined;
+    const frame = requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      resultRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [fitRecord]);
+
+  const lookupModel = async () => {
+    const model = modelQuery.trim();
+    if (!selectedType || !model) {
+      setModelNotice("Choose a type and enter a model number to search.");
+      return;
+    }
+    setModelLoading(true);
+    setModelNotice("");
+    try {
+      const found = await api.applianceModels.findByTypeAndModel(selectedType, model);
+      setValue("product", {
+        height: formatFraction(found.height),
+        width: formatFraction(found.width),
+        depth: formatFraction(found.depth),
+      }, { shouldDirty: true, shouldValidate: true });
+      setModelNotice(`${found.model} found. Product dimensions filled in; review them before checking.`);
+    } catch (error) {
+      setModelNotice(error.code === "APPLIANCE_MODEL_NOT_FOUND" || error.status === 404
+        ? "Model not found. Enter the product dimensions manually."
+        : error.message || "Model lookup failed. Enter the dimensions manually.");
     } finally {
-      setSaving(false);
+      setModelLoading(false);
     }
   };
 
-  const webOff = !appliance.webCheck;
+  const onSubmit = async (data) => {
+    if (!user?._id) {
+      toast.error("Sign in before checking an appliance fit.");
+      return;
+    }
+    setCheckingFit(true);
+    setPaymentNotice("");
+    try {
+      const record = await api.fitChecks.create({
+        author: user._id,
+        appliance: data.appliance,
+        product: data.product,
+        space: data.space,
+      });
+      setFitRecord(record);
+      persistPendingFit(record);
+    } catch (error) {
+      toast.error(error.message || "Could not check fit. Please try again.");
+    } finally {
+      setCheckingFit(false);
+    }
+  };
+
+  const onInvalid = () => toast.error("Please choose an appliance and complete all six measurements.");
+
+  const startCheckout = async () => {
+    if (!fitRecord?.id) {
+      toast.error("Run a fit check before starting payment.");
+      return;
+    }
+    if (!user?._id) {
+      toast.error("Sign in to unlock and pay for this result.");
+      return;
+    }
+    setCheckoutLoading(true);
+    setPaymentNotice("");
+    try {
+      if (!persistPendingFit(fitRecord)) throw new Error("Could not save this fit check for payment.");
+      const checkoutUrl = await api.payments.checkout({ user: user._id, reference: fitRecord.id });
+      window.location.assign(checkoutUrl);
+    } catch (error) {
+      setPaymentNotice(error.message || "Could not start checkout.");
+      setCheckoutLoading(false);
+    }
+  };
+
+  const checkPaymentStatus = async () => {
+    if (!fitRecord?.id || paymentChecking) return;
+    setPaymentChecking(true);
+    setPaymentNotice("Checking payment confirmation…");
+    try {
+      const currentFit = await api.fitChecks.get(fitRecord.id);
+      if (currentFit.isPaid) {
+        setFitRecord(currentFit);
+        setPaymentNotice("Payment confirmed. Your result is unlocked.");
+        clearPendingFit();
+      } else {
+        setPaymentNotice("Payment has not been confirmed yet. Please wait a moment and try again.");
+      }
+    } catch (error) {
+      setPaymentNotice(error.message || "Could not check payment status.");
+    } finally {
+      setPaymentChecking(false);
+    }
+  };
+
+  const useExample = () => {
+    if (!legacyAppliance?.example) return;
+    const formatDimensions = (dimensions) => Object.fromEntries(
+      Object.entries(dimensions).map(([key, value]) => [key, formatFraction(value)])
+    );
+    reset({
+      appliance: selectedType,
+      product: formatDimensions(legacyAppliance.example.product),
+      space: formatDimensions(legacyAppliance.example.space),
+    });
+    toast.message("Example measurements loaded — replace them with your own.");
+  };
 
   return (
     <div className={cn("grid gap-8", !compact && "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10")}>
-      <form onSubmit={(e) => handleSubmit(onSubmit, onInvalid)(e)} noValidate className="space-y-8">
-        {/* Step 1 */}
+      <form onSubmit={(event) => handleSubmit(onSubmit, onInvalid)(event)} noValidate className="space-y-8">
         <fieldset>
           <legend className="flex items-center gap-3 font-display text-xl">
             <span className="flex size-8 items-center justify-center rounded-full bg-ink font-sans text-sm text-white">1</span>
             Choose your appliance
           </legend>
-          <div role="radiogroup" aria-label="Appliance type" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {APPLIANCES.map((a) => {
-              const active = values.appliance === a.id;
-              return (
-                <label
-                  key={a.id}
-                  className={cn(
-                    "relative flex min-h-12 cursor-pointer items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brass-deep",
-                    active ? "border-ink bg-ink text-white" : "border-line bg-white hover:border-ink/40"
-                  )}
-                >
-                  <input type="radio" value={a.id} {...register("appliance")} className="sr-only" />
-                  <span>{a.short}</span>
-                  {a.free && (
-                    <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase", active ? "bg-brass text-ink" : "bg-ok-soft text-ok")}>Free</span>
-                  )}
-                </label>
-              );
-            })}
+          <label htmlFor="appliance-type" className="sr-only">Appliance type</label>
+          <select
+            id="appliance-type"
+            className="mt-4 h-12 w-full rounded-xl border border-line bg-white px-4 text-base text-ink focus:border-ink focus:outline-none focus:ring-4 focus:ring-ink/10"
+            disabled={typesLoading || !!typesError}
+            {...applianceField}
+            onChange={(event) => {
+              applianceField.onChange(event);
+              resetField("product", { defaultValue: blank });
+              setModelQuery("");
+              setModelNotice("");
+            }}
+          >
+            <option value="">{typesLoading ? "Loading appliance types…" : "Select appliance type"}</option>
+            {types.map(({ type, modelCount }) => (
+              <option key={type} value={type}>{type} ({modelCount} models)</option>
+            ))}
+          </select>
+          {typesError && <p role="alert" className="mt-2 text-sm text-no">{typesError}</p>}
+
+          <div className="mt-5 rounded-2xl border border-line bg-white p-4 sm:p-5">
+            <h2 className="font-display text-lg">Find your appliance model</h2>
+            <p className="mt-1 text-sm text-muted">Search by model number to fill product dimensions automatically.</p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <Field
+                label="Model number"
+                value={modelQuery}
+                onChange={(event) => setModelQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    lookupModel();
+                  }
+                }}
+                placeholder="e.g. gr364g-ss"
+                autoComplete="off"
+                className="min-w-0 flex-1"
+              />
+              <Button type="button" variant="outline" className="self-end" onClick={lookupModel} loading={modelLoading} disabled={!selectedType}>
+                <Search className="size-4" /> Find model
+              </Button>
+            </div>
+            {modelNotice && <p role="status" className="mt-3 text-sm text-muted">{modelNotice}</p>}
           </div>
         </fieldset>
 
-        {/* Step 2 & 3 */}
         {[
-          { n: 2, group: "product", title: "Enter product dimensions", note: "Use the exact manufacturer dimensions (takes less than 60 seconds)." },
+          { n: 2, group: "product", title: "Enter product dimensions", note: "Use the exact manufacturer dimensions. Model search can fill these values for you." },
           { n: 3, group: "space", title: `Enter space dimensions — ${appliance.spaceLabel.toLowerCase()}`, note: appliance.hint },
-        ].map((s) => (
-          <fieldset key={s.group}>
+        ].map((section) => (
+          <fieldset key={section.group}>
             <legend className="flex items-center gap-3 font-display text-xl">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ink font-sans text-sm text-white">{s.n}</span>
-              {s.title}
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ink font-sans text-sm text-white">{section.n}</span>
+              {section.title}
             </legend>
             <p className="mt-2 flex gap-2 text-sm text-muted">
               <Ruler className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {s.note} Use decimals only (example: 30.5).
+              {section.note} Enter exact fractions or decimals, e.g. 29 7/8 or 29.875.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {DIMS.map((d) => (
+              {DIMS.map((dimension) => (
                 <Field
-                  key={d.key}
-                  label={d.label}
-                  inputMode="decimal"
+                  key={dimension.key}
+                  label={dimension.label}
+                  inputMode="text"
                   autoComplete="off"
-                  placeholder={String(appliance.example[s.group][d.key])}
+                  placeholder="e.g. 29 7/8"
                   suffix="in"
-                  error={err(s.group, d.key)}
-                  {...register(`${s.group}.${d.key}`)}
+                  error={err(section.group, dimension.key)}
+                  {...register(`${section.group}.${dimension.key}`)}
                 />
               ))}
             </div>
@@ -152,51 +340,57 @@ export function FitChecker({ initialAppliance = "refrigerator", compact = false 
         <p className="-mt-3 text-xs text-muted">Measure the actual opening or installation space — not the old appliance.</p>
 
         <div className="flex flex-wrap gap-3">
-          <Button type="submit" size="lg" className="flex-1 sm:flex-none">
+          <Button type="submit" size="lg" className="flex-1 sm:flex-none" loading={checkingFit} disabled={typesLoading || !!typesError}>
             Check my fit
           </Button>
-          <Button type="button" variant="outline" size="lg" onClick={useExample}>
-            <Wand2 className="size-4" /> Try an example
-          </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={() => reset({ appliance: values.appliance, product: blank, space: blank })}>
+          {legacyAppliance?.example && (
+            <Button type="button" variant="outline" size="lg" onClick={useExample}>
+              <Wand2 className="size-4" /> Try an example
+            </Button>
+          )}
+          <Button type="button" variant="ghost" size="lg" onClick={() => {
+            reset({ appliance: selectedType, product: blank, space: blank });
+            setFitRecord(null);
+            setModelQuery("");
+            setPaymentNotice("");
+            clearPendingFit();
+          }}>
             <RotateCcw className="size-4" /> Reset
           </Button>
         </div>
-        <p className="text-xs text-muted">Takes 30 seconds • Prevents costly installation mistakes</p>
+        <p className="text-xs text-muted">Your fit result is calculated by the appliance API using the dimensions you enter.</p>
       </form>
 
-      {/* Result */}
       <div ref={resultRef} tabIndex={-1} aria-live="polite" className="scroll-mt-24 outline-none lg:sticky lg:top-24 lg:self-start">
         <AnimatePresence mode="wait">
-          {result ? (
+          {fitRecord ? (
             <ResultPanel
-              key="result"
-              appliance={appliance}
-              result={result}
-              product={parsed.data.product}
-              space={parsed.data.space}
-              canSave
+              key={fitRecord.id}
+              appliance={{ ...appliance, name: fitRecord.appliance }}
+              result={fitRecord.result}
+              product={fitRecord.product}
+              space={fitRecord.space}
+              locked={!fitRecord.isPaid}
+              onCheckout={startCheckout}
+              checkoutLoading={checkoutLoading}
+              paymentChecking={paymentChecking}
+              paymentNotice={paymentNotice}
+              onCheckPayment={checkPaymentStatus}
               loggedIn={authStatus === "authenticated" && !!user}
-              saved={saved}
-              saving={saving}
-              onSave={save}
+              userIdAvailable={!!user?._id}
+              canSave={false}
             />
           ) : (
             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="rounded-2xl border border-dashed border-ink/25 bg-white/60 p-8 text-center">
               <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-mist"><ArrowDown className="size-5 -rotate-90 lg:rotate-0" aria-hidden /></div>
               <h2 className="mt-4 text-xl">Your fit result appears here</h2>
-              <p className="mx-auto mt-2 max-w-xs text-sm text-muted">
-                Enter all six measurements. You’ll see one of four results: Fits Perfectly, Tight Fit, Requires Modification or Does Not Fit.
-              </p>
+              <p className="mx-auto mt-2 max-w-xs text-sm text-muted">Select an appliance, enter the product and installation-space dimensions, then check the fit.</p>
             </motion.div>
           )}
         </AnimatePresence>
-        {webOff && (
-          <p className="mt-3 flex gap-2 rounded-xl bg-mist p-4 text-sm">
-            <Smartphone className="mt-0.5 size-4 shrink-0" />
-            <span>This appliance is checked in the full app. <a href={site.appStoreUrl} className="font-medium underline">Get the app</a></span>
-          </p>
+        {fitRecord?.isPaid && paymentNotice && (
+          <p role="status" className="mt-3 rounded-xl bg-ok-soft p-3 text-sm font-medium text-ok">{paymentNotice}</p>
         )}
       </div>
     </div>

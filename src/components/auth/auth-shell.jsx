@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { ShieldCheck, Save, History } from "lucide-react";
 import { LogoMark } from "@/components/layout/logo";
-import { USE_MOCK_API } from "@/lib/config";
-import { MOCK_OTP } from "@/lib/api/mock/db";
 
-export function AuthShell({ title, subtitle, children, footer, showOtpHint }) {
+export function AuthShell({ title, subtitle, children, footer }) {
   return (
     <div className="grid min-h-[calc(100dvh-4rem)] grid-cols-[minmax(0,1fr)] lg:grid-cols-[0.9fr_1.1fr]">
       <aside className="on-dark relative hidden flex-col justify-between overflow-hidden bg-ink p-12 text-white lg:flex">
@@ -25,11 +23,6 @@ export function AuthShell({ title, subtitle, children, footer, showOtpHint }) {
         <div className="w-full max-w-md">
           <h1 className="text-4xl">{title}</h1>
           {subtitle && <p className="mt-3 text-muted">{subtitle}</p>}
-          {USE_MOCK_API && showOtpHint && (
-            <p role="note" className="mt-5 rounded-xl border border-tight/30 bg-tight-soft p-3 text-sm text-tight">
-              Demo mode: no email is sent. Use code <strong className="tabular-nums">{MOCK_OTP}</strong>.
-            </p>
-          )}
           <div className="mt-8">{children}</div>
           {footer && <div className="mt-8 text-center text-sm text-muted">{footer}</div>}
         </div>

@@ -9,18 +9,19 @@ import { Button } from "@/components/ui/button";
 import { LogoutDialog } from "@/components/layout/logout-dialog";
 import { useAuth } from "@/context/auth-context";
 import { changePasswordSchema } from "@/lib/validation/schemas";
-import { api } from "@/lib/api";
+import { useChangePasswordMutation } from "@/store/api";
 
 export default function Settings() {
   const { user } = useAuth();
   const [logout, setLogout] = useState(false);
   const [formError, setFormError] = useState("");
-  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(changePasswordSchema), mode: "onTouched" });
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({ resolver: zodResolver(changePasswordSchema), mode: "onTouched" });
 
   const onSubmit = async ({ currentPassword, password }) => {
     setFormError("");
     try {
-      await api.user.changePassword({ currentPassword, password });
+      await changePassword({ currentPassword, password }).unwrap();
       toast.success("Password changed.");
       reset();
     } catch (e) {
@@ -40,7 +41,7 @@ export default function Settings() {
           <Field label="Current password" type="password" autoComplete="current-password" error={errors.currentPassword?.message} {...register("currentPassword")} />
           <Field label="New password" type="password" autoComplete="new-password" hint="At least 8 characters, with a letter and a number." error={errors.password?.message} {...register("password")} />
           <Field label="Confirm new password" type="password" autoComplete="new-password" error={errors.confirmPassword?.message} {...register("confirmPassword")} />
-          <Button type="submit" loading={isSubmitting}>Update password</Button>
+          <Button type="submit" loading={isLoading}>Update password</Button>
         </form>
       </section>
 

@@ -1,11 +1,32 @@
-import { request } from "./client";
+import { clearAuthTokens, getResponseUser, request } from "./client";
 import { ENDPOINTS } from "./endpoints";
 
-/** Expected user shape: { id, name, email, phone?, createdAt, emailVerified } */
+function makeFormData(data, image) {
+  const formData = new FormData();
+  if (image) formData.append("image", image);
+  formData.append("data", JSON.stringify(data));
+  return formData;
+}
+
 export const userApi = {
-  getProfile: () => request(ENDPOINTS.getProfile),
-  /** UI sends {name,email,phone}. Expects {user}. */
-  updateProfile: (payload) => request(ENDPOINTS.updateProfile, { body: payload }),
-  /** UI sends {currentPassword,password}. Expects {}. */
-  changePassword: (payload) => request(ENDPOINTS.changePassword, { body: payload }),
+  async getProfile() {
+    const response = await request(ENDPOINTS.getProfile);
+    return { user: getResponseUser(response) };
+  },
+
+  async updateProfile({ name, email, phone, image }) {
+    const response = await request(ENDPOINTS.updateProfile, {
+      body: makeFormData({ name, email, contactNumber: phone }, image),
+    });
+    return { user: getResponseUser(response) };
+  },
+
+  changePassword: ({ currentPassword, password }) =>
+    request(ENDPOINTS.changePassword, { body: { oldPassword: currentPassword, newPassword: password } }),
+
+  async deleteProfile() {
+    const response = await request(ENDPOINTS.deleteProfile);
+    clearAuthTokens();
+    return response;
+  },
 };

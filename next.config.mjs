@@ -1,9 +1,14 @@
 import { GUIDES } from "./src/lib/content/guides.js";
 
+const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Allow the development client to connect when this app is opened via LAN IP.
-  allowedDevOrigins: ["10.10.10.27"],
+  // Additional hostnames for LAN access during development.
+  allowedDevOrigins,
   // Keep the original WordPress URLs working: /<slug>/ -> /guides/<slug>
   async redirects() {
     return [

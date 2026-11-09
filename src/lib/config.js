@@ -6,8 +6,9 @@ export const site = {
   playStoreUrl: process.env.NEXT_PUBLIC_PLAY_STORE_URL || "#",
 };
 
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
-export const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API !== "false";
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.28.24:5012/api/v1"
+).replace(/\/$/, "");
 
-/** Set to false once your own Privacy Policy / Terms text replaces the drafts. */
+/** Legal text is fetched from the backend and should be reviewed before publication. */
 export const LEGAL_IS_DRAFT = true;

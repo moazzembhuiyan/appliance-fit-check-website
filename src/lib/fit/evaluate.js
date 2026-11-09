@@ -1,4 +1,5 @@
 import { RULES } from "./rules.config";
+import { formatFraction } from "@/lib/measurements";
 
 /** The four results named on the original website, best to worst. */
 export const STATUSES = {
@@ -27,7 +28,7 @@ export function classifyDimension(clearance, rule) {
 }
 
 function dimensionMessage(label, status, clearance) {
-  const c = Math.abs(clearance).toFixed(2).replace(/\.?0+$/, "");
+  const c = formatFraction(Math.abs(clearance));
   switch (status) {
     case "fits":
       return `${label}: ${c} in to spare.`;

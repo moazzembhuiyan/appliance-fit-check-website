@@ -17,6 +17,6 @@ export const FAQ = [
   },
   {
     q: "Do I need exact measurements?",
-    a: "Yes. Measure the actual cabinet opening, countertop cutout, or installation space — not merely the old appliance. Use the new appliance’s exact manufacturer dimensions and enter decimals when needed, such as 30.5 inches.",
+    a: "Yes. Measure the actual cabinet opening, countertop cutout, or installation space — not merely the old appliance. Use the new appliance’s exact manufacturer dimensions. Enter inches as a fraction (such as 29 7/8) or as a decimal; the calculator converts fractions to precise numeric measurements for the fit check.",
   },
 ];

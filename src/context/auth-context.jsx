@@ -1,50 +1,42 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api";
 
-/**
- * Frontend auth state. status: "loading" | "authenticated" | "unauthenticated".
- * On mount it asks the API for the current session (api.auth.getSession). With a
- * real backend this works for httpOnly-cookie sessions as-is; for token-based
- * auth, store/read the token in lib/api/client.js (getAuthHeaders).
- * Real security is enforced by your backend — client-side guards are UX only.
- */
-const AuthContext = createContext(null);
+import { useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { apiSlice, useGetSessionQuery, useLogoutMutation } from "@/store/api";
+import { clearUser, setUser } from "@/store/auth-slice";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [status, setStatus] = useState("loading");
+  const dispatch = useDispatch();
+  const status = useSelector((state) => state.auth.status);
+  const { data, error, isFetching } = useGetSessionQuery();
 
   useEffect(() => {
-    let alive = true;
-    api.auth
-      .getSession()
-      .then(({ user }) => alive && (setUser(user), setStatus("authenticated")))
-      .catch(() => alive && (setUser(null), setStatus("unauthenticated")));
-    return () => {
-      alive = false;
-    };
-  }, []);
+    if (data?.user) dispatch(setUser(data.user));
+    else if (status === "loading" && error && !isFetching) dispatch(clearUser());
+  }, [data, dispatch, error, isFetching, status]);
 
-  const signIn = useCallback((u) => {
-    setUser(u);
-    setStatus("authenticated");
-  }, []);
-  const signOut = useCallback(async () => {
-    try {
-      await api.auth.logout();
-    } finally {
-      setUser(null);
-      setStatus("unauthenticated");
-    }
-  }, []);
-
-  const value = useMemo(() => ({ user, status, signIn, signOut, setUser }), [user, status, signIn, signOut]);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return children;
 }
 
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
-};
+export function useAuth() {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
+  const status = useSelector((state) => state.auth.status);
+  const [logout] = useLogoutMutation();
+
+  const signIn = useCallback((nextUser) => {
+    dispatch(setUser(nextUser));
+    dispatch(apiSlice.util.invalidateTags(["User"]));
+  }, [dispatch]);
+  const setCurrentUser = useCallback((nextUser) => dispatch(setUser(nextUser)), [dispatch]);
+  const signOut = useCallback(async () => {
+    try {
+      await logout().unwrap();
+    } finally {
+      dispatch(clearUser());
+      dispatch(apiSlice.util.resetApiState());
+    }
+  }, [dispatch, logout]);
+
+  return { user, status, signIn, signOut, setUser: setCurrentUser };
+}

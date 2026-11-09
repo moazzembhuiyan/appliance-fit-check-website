@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/context/auth-context";
+import { AppProviders } from "@/components/providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { site } from "@/lib/config";
@@ -21,12 +21,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="min-h-dvh">
         <a href="#main" className="skip-link">Skip to content</a>
-        <AuthProvider>
+        <AppProviders>
           <Header />
           <main id="main">{children}</main>
           <Footer />
           <Toaster position="top-center" richColors closeButton />
-        </AuthProvider>
+        </AppProviders>
       </body>
     </html>
   );

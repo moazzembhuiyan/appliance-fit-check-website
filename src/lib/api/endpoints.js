@@ -1,34 +1,30 @@
 /**
- * ============================================================================
- *  API ENDPOINTS — PLACEHOLDERS
- * ============================================================================
- *  These paths are NOT real. Your backend's API specification was not
- *  provided, so each path below is a placeholder to be replaced with your
- *  actual route. Request/response shapes in ./auth.js, ./user.js, ./fitChecks.js
- *  and ./contact.js are likewise documented assumptions — adjust to match.
- * ============================================================================
+ * API paths from the Appliance Fit Check Postman collection.
+ * The contact route is not included in the Postman collection.
  */
 export const ENDPOINTS = {
   // Auth
-  register: { method: "POST", path: "/TODO/auth/register" },
-  login: { method: "POST", path: "/TODO/auth/login" },
-  logout: { method: "POST", path: "/TODO/auth/logout" },
-  verifyOtp: { method: "POST", path: "/TODO/auth/verify-otp" },
-  resendOtp: { method: "POST", path: "/TODO/auth/resend-otp" },
-  forgotPassword: { method: "POST", path: "/TODO/auth/forgot-password" },
-  verifyResetOtp: { method: "POST", path: "/TODO/auth/verify-reset-otp" },
-  resetPassword: { method: "POST", path: "/TODO/auth/reset-password" },
-  session: { method: "GET", path: "/TODO/auth/session" },
+  register: { method: "POST", path: "/users/register" },
+  login: { method: "POST", path: "/auth/login" },
+  changePassword: { method: "POST", path: "/auth/change-password" },
+  refreshToken: { method: "POST", path: "/auth/refresh-token" },
+  forgotPassword: { method: "POST", path: "/auth/forget-password" },
+  resetPassword: { method: "POST", path: "/auth/reset-password" },
+  verifyOtp: { method: "POST", path: "/otp/verify-otp" },
+  resendOtp: { method: "POST", path: "/otp/resend-otp" },
   // User
-  getProfile: { method: "GET", path: "/TODO/user/profile" },
-  updateProfile: { method: "PATCH", path: "/TODO/user/profile" },
-  changePassword: { method: "POST", path: "/TODO/user/change-password" },
+  getProfile: { method: "GET", path: "/users/my-profile" },
+  updateProfile: { method: "PUT", path: "/users/update-my-profile" },
+  deleteProfile: { method: "DELETE", path: "/users/delete-profile" },
+  // Appliance catalogue
+  applianceTypes: { method: "GET", path: "/appliance-models/types" },
+  applianceByTypeAndModel: { method: "GET", path: "/appliance-models/by-type-and-model" },
+  contents: { method: "GET", path: "/contents" },
   // Fit checks
-  listFitChecks: { method: "GET", path: "/TODO/fit-checks" },
-  saveFitCheck: { method: "POST", path: "/TODO/fit-checks" },
-  deleteFitCheck: { method: "DELETE", path: "/TODO/fit-checks/:id" },
-  // Optional: server-side evaluation (otherwise the browser rules in lib/fit are used)
-  evaluateFit: { method: "POST", path: "/TODO/fit-checks/evaluate" },
-  // Contact
-  sendContact: { method: "POST", path: "/TODO/contact" },
+  listFitChecks: { method: "GET", path: "/appliance-fit/my-appliance-fit" },
+  getFitCheck: { method: "GET", path: "/appliance-fit/:id" },
+  saveFitCheck: { method: "POST", path: "/appliance-fit" },
+  deleteFitCheck: { method: "DELETE", path: "/appliance-fit/:id" },
+  // Payments
+  paymentCheckout: { method: "POST", path: "/payments/checkout" },
 };

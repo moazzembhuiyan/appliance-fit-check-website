@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { formatInches } from "./measurements";
 export const cn = (...i) => twMerge(clsx(i));
-export const fmtIn = (n) => `${Number(n).toFixed(2).replace(/\.?0+$/, "")} in`;
+export const fmtIn = formatInches;
 export const fmtDate = (iso) =>
   new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
