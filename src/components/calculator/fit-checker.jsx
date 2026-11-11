@@ -102,7 +102,7 @@ export function FitChecker({ initialAppliance = "refrigerator", compact = false 
   const appliance = legacyAppliance || {
     name: selectedType || "Appliance",
     spaceLabel: "countertop cutout",
-    hint: " the installation space carefully and enter its height, width, and depth.",
+    hint: "Measure the installation space carefully and enter its height, width, and depth.",
     guide: "faq",
     checklist: [],
   };
