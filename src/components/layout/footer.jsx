@@ -16,8 +16,8 @@ export function Footer() {
             Compare your appliance dimensions with your actual installation space before you buy — and avoid returns, installation delays and unexpected modifications.
           </p>
           <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <a href={site.appStoreUrl} className="rounded-full border border-white/30 px-4 py-2 hover:bg-white/10">Download on the App Store</a>
-            <a href={site.playStoreUrl} className="rounded-full border border-white/30 px-4 py-2 hover:bg-white/10">Get it on Google Play</a>
+            {site.appStoreUrl && <a href={site.appStoreUrl} className="rounded-full border border-white/30 px-4 py-2 hover:bg-white/10">Download on the App Store</a>}
+            {site.playStoreUrl && <a href={site.playStoreUrl} className="rounded-full border border-white/30 px-4 py-2 hover:bg-white/10">Get it on Google Play</a>}
           </div>
         </div>
         <nav aria-label="Appliance guides">

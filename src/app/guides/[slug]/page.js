@@ -5,7 +5,7 @@ import { Container, Eyebrow } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
 import { GUIDES, getGuide } from "@/lib/content/guides";
 import { getAppliance } from "@/lib/fit/appliances";
-import { site } from "@/lib/config";
+import { FIT_CHECK_PRICE, site } from "@/lib/config";
 
 export const dynamicParams = false;
 export const generateStaticParams = () => GUIDES.map((g) => ({ slug: g.slug }));
@@ -71,8 +71,8 @@ export default async function GuidePage({ params }) {
         <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
           <div className="on-dark rounded-2xl bg-ink p-6 text-white">
             <h2 className="text-xl">{appliance ? `Check your ${appliance.name.toLowerCase()}` : "Check your fit"}</h2>
-            <p className="mt-2 text-sm text-white/70">Compare exact dimensions with your actual space in about a minute.</p>
-            <Button asChild variant="brass" className="mt-5 w-full"><Link href={appliance ? `/check?appliance=${appliance.id}` : "/check"}>Start my free fit check <ArrowRight className="size-4" /></Link></Button>
+            <p className="mt-2 text-sm text-white/70">Each fit check costs {FIT_CHECK_PRICE}. You’ll see the price before checkout.</p>
+            <Button asChild variant="brass" className="mt-5 w-full"><Link href={appliance ? `/check?appliance=${appliance.id}` : "/check"}>Check for {FIT_CHECK_PRICE} <ArrowRight className="size-4" /></Link></Button>
           </div>
           {related.length > 0 && (
             <nav aria-label="Related guides">

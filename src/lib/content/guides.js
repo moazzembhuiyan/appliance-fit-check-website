@@ -51,8 +51,13 @@ export const GUIDES = [
     summary: "Measure the real cabinet cutout in several places, then check the electrical and trim details.",
     sections: [
       {
-        h: "Why wall oven cutout size matters",
-        p: ["Measure the actual cabinet cutout width, height and depth. Measure width and height in multiple places and use the smallest."],
+        h: "Manufacturer cutout dimensions vs. overall oven dimensions",
+        p: ["Use the manufacturer’s required cutout dimensions to check the cabinet opening. These specify the width, height and depth the cabinet must provide. Overall oven dimensions describe the outside of the appliance, including its front trim; they are not interchangeable with cutout dimensions. Compare each set only with its matching measurement."],
+        list: ["Find the required cutout width, height and depth in the installation instructions", "Measure the cabinet opening in several places and use the smallest width and height", "Use overall oven dimensions separately to check exterior clearance and fit"],
+      },
+      {
+        h: "Check more than the cutout",
+        p: ["Also check the required cabinet support, clearances and electrical location."],
         list: ["Electrical junction box and conduit", "Trim", "Oven-door clearance"],
       },
       { h: "Can a 30-inch wall oven fit a smaller cutout?", p: ["Measuring first can prevent unexpected cabinet modifications and installation delays."] },
@@ -69,7 +74,12 @@ export const GUIDES = [
     sections: [
       {
         h: "Compare before you buy",
-        p: ["Compare the cutout dimensions with the overall oven dimensions, and check cabinet support, clearances, electrical location and any possible modifications."],
+        p: ["Use the manufacturer’s required cutout dimensions (width, height and depth) to check the cabinet opening. These are different from the oven’s overall outside dimensions, which include the front trim. Do not substitute overall dimensions for the required cutout dimensions; compare each only with its corresponding measurement."],
+        list: ["Find the required cutout dimensions in the manufacturer’s installation instructions", "Measure the actual cabinet opening in several places and use the smallest width and height", "Check overall oven dimensions separately for exterior clearance, trim coverage and obstructions"],
+      },
+      {
+        h: "Check the installation details",
+        p: ["Also verify cabinet support, manufacturer clearances, electrical location and any modifications before buying."],
       },
     ],
     related: ["what-size-wall-oven-fits-my-existing-cutout", "what-happens-if-a-wall-oven-cutout-is-too-big"],
@@ -300,7 +310,7 @@ export const GUIDES = [
   {
     slug: "can-i-replace-a-built-in-microwave-with-a-different-brand",
     kind: "question",
-    appliance: "wall-oven-microwave-combo",
+    appliance: "built-in-microwave",
     title: "Can I Replace a Built-In Microwave With a Different Brand?",
     summary: "Don’t assume an existing trim kit works with another brand or model.",
     partial: true,

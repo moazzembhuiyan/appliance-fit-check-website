@@ -20,6 +20,7 @@ import {
   PENDING_FIT_KEY,
   persistPendingFit as savePendingFit,
 } from "@/lib/fit/pending-payment";
+import { FIT_CHECK_PRICE } from "@/lib/config";
 
 const blank = { height: "", width: "", depth: "" };
 const DIMS = [
@@ -99,6 +100,7 @@ export function FitChecker({ initialAppliance = "refrigerator", compact = false 
   const applianceField = register("appliance");
   const selectedType = values.appliance || "";
   const legacyAppliance = getLegacyAppliance(selectedType);
+  const isWallOven = legacyAppliance?.id === "wall-oven";
   const appliance = legacyAppliance || {
     name: selectedType || "Appliance",
     spaceLabel: "countertop cutout",
@@ -309,7 +311,14 @@ export function FitChecker({ initialAppliance = "refrigerator", compact = false 
         </fieldset>
 
         {[
-          { n: 2, group: "product", title: "Enter product dimensions", note: "Use the exact manufacturer dimensions. Model search can fill these values for you." },
+          {
+            n: 2,
+            group: "product",
+            title: isWallOven ? "Enter manufacturer-required cutout dimensions" : "Enter product dimensions",
+            note: isWallOven
+              ? "Use the required cutout dimensions from the installation instructions, not the oven’s overall outside dimensions. Model search can fill these values for you."
+              : "Use the exact manufacturer dimensions. Model search can fill these values for you.",
+          },
           { n: 3, group: "space", title: `Enter space dimensions — ${appliance.spaceLabel.toLowerCase()}`, note: appliance.hint },
         ].map((section) => (
           <fieldset key={section.group}>
@@ -358,7 +367,7 @@ export function FitChecker({ initialAppliance = "refrigerator", compact = false 
             <RotateCcw className="size-4" /> Reset
           </Button>
         </div>
-        <p className="text-xs text-muted">Your fit result is calculated by the appliance API using the dimensions you enter.</p>
+        <p className="text-xs text-muted">Submit your measurements to create a fit check. Pay {FIT_CHECK_PRICE} to unlock the result and dimension details.</p>
       </form>
 
       <div ref={resultRef} tabIndex={-1} aria-live="polite" className="scroll-mt-24 outline-none lg:sticky lg:top-24 lg:self-start">

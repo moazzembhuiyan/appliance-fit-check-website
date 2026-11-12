@@ -3,6 +3,7 @@ import { Container, PageHeader } from "@/components/ui/section";
 import { FaqList } from "@/components/ui/faq-list";
 import { Button } from "@/components/ui/button";
 import { FAQ } from "@/lib/content/faq";
+import { FIT_CHECK_PRICE } from "@/lib/config";
 
 export const metadata = {
   title: "Frequently asked questions",
@@ -24,8 +25,8 @@ export default function FaqPage() {
         <FaqList items={FAQ} />
         <div className="mt-14 rounded-2xl bg-mist p-8 text-center">
           <h2 className="text-3xl">Ready to check before you buy?</h2>
-          <p className="mx-auto mt-3 max-w-md text-muted">Check your appliance fit before purchasing to help identify sizing problems before delivery or installation day.</p>
-          <Button asChild size="lg" className="mt-6"><Link href="/check">Start my free website fit check</Link></Button>
+          <p className="mx-auto mt-3 max-w-md text-muted">Each fit check costs {FIT_CHECK_PRICE}. You’ll see the price before payment.</p>
+          <Button asChild size="lg" className="mt-6"><Link href="/check">Check for {FIT_CHECK_PRICE}</Link></Button>
         </div>
       </Container>
     </>

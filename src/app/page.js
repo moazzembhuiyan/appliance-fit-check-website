@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { APPLIANCES } from "@/lib/fit/appliances";
 import { FAQ } from "@/lib/content/faq";
 import { GUIDES } from "@/lib/content/guides";
-import { site } from "@/lib/config";
+import { FIT_CHECK_PRICE, site } from "@/lib/config";
 
 export const metadata = {
   title: { absolute: "Appliance Fit Check — Will this appliance fit? Check before you buy" },
@@ -20,7 +20,7 @@ export const metadata = {
 const STEPS = [
   ["Choose your appliance", "Select the appliance type you want to check."],
   ["Enter measurements", "Enter the appliance dimensions and the measurements of your actual installation space."],
-  ["Get your fit result", "See whether the appliance fits perfectly, is a tight fit, requires modification, or does not fit."],
+  ["Unlock your fit result", `Submit your measurements, then pay ${FIT_CHECK_PRICE} to see the result and dimension details.`],
 ];
 
 const RESULTS = [
@@ -50,9 +50,9 @@ export default function Home() {
       <section id="check" className="scroll-mt-16 py-16 sm:py-24">
         <Container>
           <div className="mb-10 max-w-2xl">
-            <Eyebrow>Free fit check</Eyebrow>
+            <Eyebrow>{FIT_CHECK_PRICE} per check</Eyebrow>
             <h2 className="mt-3 text-4xl sm:text-5xl">Check appliance fit</h2>
-            <p className="mt-3 text-lg text-muted">Enter your product and space dimensions. Your result updates as you type.</p>
+            <p className="mt-3 text-lg text-muted">Submit your product and space dimensions to create a fit check. Unlock the full result for {FIT_CHECK_PRICE}; the price is shown before payment.</p>
           </div>
           <FitChecker />
         </Container>
@@ -167,19 +167,19 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* <section className="on-dark bg-ink pb-0 pt-16 text-white sm:pt-20">
+      <section className="on-dark bg-ink pb-0 pt-16 text-white sm:pt-20">
         <Container className="flex flex-col items-start justify-between gap-8 pb-16 sm:pb-20 md:flex-row md:items-center">
           <div className="max-w-xl">
             <Smartphone className="size-8 text-brass" aria-hidden />
             <h2 className="mt-4 text-4xl">Get the full Appliance Fit Check app</h2>
-            <p className="mt-3 text-white/75">Fast fit results before you buy, using your appliance dimensions and actual installation-space measurements. Run 1 free fit check in the app — it takes 30 seconds.</p>
+            <p className="mt-3 text-white/75">Check your appliance dimensions against your actual installation space. Each fit check costs {FIT_CHECK_PRICE}; the price is shown before checkout.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild variant="brass" size="lg"><a href={site.appStoreUrl}>Download on the App Store</a></Button>
-            <Button asChild variant="outline-light" size="lg"><a href={site.playStoreUrl}>Get it on Google Play</a></Button>
+            {site.appStoreUrl && <Button asChild variant="brass" size="lg"><a href={site.appStoreUrl}>Download on the App Store</a></Button>}
+            {site.playStoreUrl && <Button asChild variant="outline-light" size="lg"><a href={site.playStoreUrl}>Get it on Google Play</a></Button>}
           </div>
         </Container>
-      </section> */}
+      </section>
     </>
   );
 }

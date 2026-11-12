@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge, STATUS_STYLE } from "@/components/ui/status-badge";
 import { FitDiagram } from "./fit-diagram";
 import { fmtIn, cn } from "@/lib/utils";
-import { site } from "@/lib/config";
+import { FIT_CHECK_PRICE, site } from "@/lib/config";
 
 function ClearanceRow({ d }) {
   const s = STATUS_STYLE[d.status];
@@ -135,11 +135,13 @@ export function ResultPanel({
             <BookOpen className="size-4" /> {appliance.name} guide
           </Link>
         </Button>}
-        <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
-          <a href={site.appStoreUrl}>
-            <Smartphone className="size-4" /> Full app
-          </a>
-        </Button>
+        {site.appStoreUrl && (
+          <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
+            <a href={site.appStoreUrl}>
+              <Smartphone className="size-4" /> Full app
+            </a>
+          </Button>
+        )}
       </div>
 
       </div>
@@ -151,14 +153,14 @@ export function ResultPanel({
               <LockKeyhole className="size-6" aria-hidden />
             </div>
             <h2 className="mt-4 font-display text-2xl">Your result is ready</h2>
-            <p className="mt-2 text-sm text-muted">Complete payment to reveal the fit result and dimension-by-dimension details.</p>
+            <p className="mt-2 text-sm text-muted">Pay {FIT_CHECK_PRICE} for this check to reveal the fit result and dimension-by-dimension details. The price is shown before checkout.</p>
             {!loggedIn ? (
               <Button asChild className="mt-5 w-full" size="lg">
                 <Link href="/login?next=/check">Sign in to unlock your result</Link>
               </Button>
             ) : userIdAvailable ? (
               <Button className="mt-5 w-full" size="lg" onClick={onCheckout} loading={checkoutLoading}>
-                <CreditCard className="size-4" /> Pay and view result
+                <CreditCard className="size-4" /> Pay {FIT_CHECK_PRICE} and view result
               </Button>
             ) : (
               <p role="alert" className="mt-4 text-sm text-no">Your account ID is missing. Refresh your profile and try again.</p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container, PageHeader } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
+import { FIT_CHECK_PRICE } from "@/lib/config";
 
 export const metadata = {
   title: "About Appliance Fit Check",
@@ -19,10 +20,11 @@ export default function About() {
           <p>Appliance Fit Check was created from real-world appliance installation experience to help homeowners avoid costly fit problems before they buy.</p>
           <p>Many installation issues happen because a new appliance does not properly match the available cabinet opening, countertop cutout, venting layout, or installation space. These problems can cause installation delays, expensive modifications, appliance returns, and additional labor costs.</p>
           <p>Appliance Fit Check helps homeowners compare a new appliance with the actual installation space before making a purchase.</p>
+          <p>Each fit check costs {FIT_CHECK_PRICE}. You’ll see the price before proceeding to payment.</p>
           <h2 className="pt-6 text-3xl">Designed around real-world installation problems</h2>
           <p>Appliance Fit Check is based on common problems encountered during real appliance installations — not merely advertised appliance sizes. It helps homeowners evaluate dishwashers, wall ovens, cooktops, refrigerators, over-the-range microwaves, and range hoods before installation day.</p>
           <p>The goal is to help homeowners identify possible fit problems before purchasing an appliance, when there is still time to select a different model or prepare for necessary modifications.</p>
-          <Button asChild size="lg" className="mt-4"><Link href="/check">Start my free website fit check</Link></Button>
+          <Button asChild size="lg" className="mt-4"><Link href="/check">Check for {FIT_CHECK_PRICE}</Link></Button>
         </div>
         <div>
           <h2 className="text-3xl">Why appliance fit matters</h2>

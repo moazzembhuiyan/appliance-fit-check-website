@@ -1,17 +1,13 @@
 /**
- * Appliance catalogue. The seven types come from the site's FAQ
- * ("What appliances can I check?"). `webCheck` controls whether the website
+ * Appliance catalogue. `webCheck` controls whether the website
  * calculator runs the check (true) or only points to the app (false).
- * The extracted content did not say which appliances are free on the web
- * (only the refrigerator is labelled "Free"), so all are enabled by default —
- * flip `webCheck` to false for any that should be app-only.
+ * The web calculator supports each listed appliance type.
  */
 export const APPLIANCES = [
   {
     id: "refrigerator",
     name: "Refrigerator",
     short: "Refrigerator",
-    free: true,
     webCheck: true,
     spaceLabel: "Cabinet or installation opening",
     guide: "refrigerator-fit-guide",
@@ -38,6 +34,16 @@ export const APPLIANCES = [
       "Cabinet support below the oven",
     ],
     example: { product: { height: 28.5, width: 29.5, depth: 23.5 }, space: { height: 28.75, width: 30, depth: 24 } },
+  },
+  {
+    id: "built-in-microwave",
+    name: "Built-in microwave",
+    short: "Built-in microwave",
+    webCheck: true,
+    spaceLabel: "Cabinet cutout",
+    guide: "can-i-replace-a-built-in-microwave-with-a-different-brand",
+    hint: "Measure the cabinet cutout and compare it with the manufacturer's required dimensions.",
+    checklist: ["Trim-kit compatibility", "Ventilation and outlet location", "Manufacturer clearances"],
   },
   {
     id: "wall-oven-microwave-combo",
