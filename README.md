@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F172A,50:1E3A8A,100:38BDF8&height=180&section=header&text=Appliance%20Fit%20Check&fontSize=40&fontColor=ffffff&fontAlignY=36&desc=Will%20your%20appliance%20fit%3F%20Check%20before%20you%20buy&descAlignY=58&descSize=16" alt="Appliance Fit Check" />
+<img src=".github/banner.svg" width="100%" alt="Appliance Fit Check — Will your appliance fit? Check before you buy" />
 
 <p><b>🌐 Web Application</b></p>
 

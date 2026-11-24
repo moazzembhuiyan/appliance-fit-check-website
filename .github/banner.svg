@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="Appliance Fit Check — Will your appliance fit? Check before you buy">
+  <style>
+    .fade { opacity: 0; animation: up .9s ease-out forwards; }
+    .pill { opacity: 0; animation: up .7s ease-out forwards; }
+    .orb { animation: float 9s ease-in-out infinite alternate; }
+    .orb2 { animation: float 11s ease-in-out infinite alternate-reverse; }
+    .shine { animation: shine 6s linear infinite; }
+    @keyframes up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { from { transform: translate(0,0); } to { transform: translate(60px,25px); } }
+    @keyframes shine { from { transform: translateX(-1400px); } to { transform: translateX(1400px); } }
+  </style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020617"/><stop offset="0.55" stop-color="#0F1E46"/><stop offset="1" stop-color="#0C4A6E"/>
+    </linearGradient>
+    <linearGradient id="txt" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#BAE6FD"/><stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="o1"><stop offset="0" stop-color="#38BDF8" stop-opacity=".35"/><stop offset="1" stop-color="#38BDF8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="o2"><stop offset="0" stop-color="#6366F1" stop-opacity=".35"/><stop offset="1" stop-color="#6366F1" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sh" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#38BDF8" stroke-opacity=".06"/>
+    </pattern>
+    <clipPath id="r"><rect width="1200" height="260" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#r)">
+    <rect width="1200" height="260" fill="url(#bg)"/>
+    <rect width="1200" height="260" fill="url(#grid)"/>
+    <circle class="orb" cx="180" cy="40" r="230" fill="url(#o1)"/>
+    <circle class="orb2" cx="1040" cy="240" r="260" fill="url(#o2)"/>
+    <rect class="shine" x="0" y="0" width="500" height="260" fill="url(#sh)" transform="skewX(-20)"/>
+    <text class="fade" x="600.0" y="120" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="54" font-weight="800" letter-spacing="-1" fill="url(#txt)">Appliance Fit Check</text>
+    <text class="fade" style="animation-delay:.25s" x="600.0" y="164" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="21" font-weight="500" fill="#CBD5E1">Will your appliance fit? Check before you buy</text>
+    <g class="pill" style="animation-delay:0.50s">
+      <rect x="336.8" y="182.0" width="100.4" height="32" rx="16" fill="#38BDF8" fill-opacity="0.12" stroke="#38BDF8" stroke-opacity="0.55"/>
+      <text x="387.0" y="203.0" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#E0F2FE">Next.js</text>
+    </g>
+    <g class="pill" style="animation-delay:0.62s">
+      <rect x="451.2" y="182.0" width="128.0" height="32" rx="16" fill="#38BDF8" fill-opacity="0.12" stroke="#38BDF8" stroke-opacity="0.55"/>
+      <text x="515.2" y="203.0" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#E0F2FE">JavaScript</text>
+    </g>
+    <g class="pill" style="animation-delay:0.74s">
+      <rect x="593.2" y="182.0" width="146.4" height="32" rx="16" fill="#38BDF8" fill-opacity="0.12" stroke="#38BDF8" stroke-opacity="0.55"/>
+      <text x="666.4" y="203.0" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#E0F2FE">Tailwind CSS</text>
+    </g>
+    <g class="pill" style="animation-delay:0.86s">
+      <rect x="753.6" y="182.0" width="109.6" height="32" rx="16" fill="#38BDF8" fill-opacity="0.12" stroke="#38BDF8" stroke-opacity="0.55"/>
+      <text x="808.4" y="203.0" text-anchor="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#E0F2FE">Radix UI</text>
+    </g>
+    <rect x="0" y="256" width="1200" height="4" fill="#38BDF8" fill-opacity=".8"/>
+  </g>
+</svg>
